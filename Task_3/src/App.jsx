@@ -1,5 +1,7 @@
+import PostsList from "./components/PostList";
+
 function App() {
-  return <h1>The list of posts</h1>;
+  return <PostsList />;
 }
 
 export default App;
