@@ -1,39 +1,54 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-
-const API_URL = "https://jsonplaceholder.typicode.com/posts";
-
-export const fetchPosts = createAsyncThunk("posts/fetchPosts", async () => {
-  const response = await fetch(API_URL);
-  const data = await response.json();
-  return data;
-});
+import { createSlice } from "@reduxjs/toolkit";
+import { addPost, fetchPosts } from "./postsAction";
 
 const initialState = {
   posts: [],
-  isLoading: false,
+  getLoading: "idle",
+  postLoading: "idle",
   error: null,
 };
 
 const postsSlice = createSlice({
   name: "posts",
   initialState,
-  reducers: {},
+  reducers: {
+    setPostLoading: (state, action) => {
+      state.postLoading = action.payload;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchPosts.pending, (state) => {
-        state.isLoading = true;
+        state.getLoading = "pending";
         state.error = null;
       })
       .addCase(fetchPosts.fulfilled, (state, action) => {
-        state.isLoading = false;
+        state.getLoading = "succeeded";
         state.posts = action.payload;
         state.error = null;
       })
       .addCase(fetchPosts.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload?.message || "Something went wrong";
+        state.getLoading = "failed";
+        state.error = action.payload?.error || "Something went wrong";
+      });
+
+    builder
+      .addCase(addPost.pending, (state) => {
+        state.postLoading = "pending";
+        state.error = null;
+      })
+      .addCase(addPost.fulfilled, (state, action) => {
+        state.postLoading = "succeeded";
+        state.posts.push(action.payload);
+        state.error = null;
+      })
+      .addCase(addPost.rejected, (state, action) => {
+        state.postLoading = "failed";
+        state.error = action.payload?.error || "Failed to add post";
       });
   },
 });
+
+export const { setPostLoading } = postsSlice.actions;
 
 export default postsSlice.reducer;
